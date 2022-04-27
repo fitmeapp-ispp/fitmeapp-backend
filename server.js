@@ -77,8 +77,6 @@ app.use('/api/v1/comidas', require('./routes/comidas'));
 app.use('/api/v1/dia', require('./routes/dia'));
 app.use('/api/v1/consumicion', require('./routes/consumicion'));
 
-
-
 app.use('/api/v1/material', require('./routes/material'));
 app.use('/api/v1/musculo', require('./routes/musculo'));
 app.use('/api/v1/categoria', require('./routes/categoria'));
