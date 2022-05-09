@@ -154,6 +154,7 @@ router.get('/:id', async (req, res) => {
 router.post('/', async(req, res) => {
   const body = req.body;  
   try {
+    console.log("Añadiendo un nuevo alimento...")
       body._id = new mongoose.Types.ObjectId();
       const alimentoDB = await Alimento.create(body);
       res.status(200).json(alimentoDB); 
@@ -170,6 +171,7 @@ router.put('/:id', async(req, res) => {
   const _id = req.params.id;
   const body = req.body;  
   try {
+    console.log("Actualizando el alimento "+_id+"...")
       const alimentoDB = await Alimento.findByIdAndUpdate(_id, body);
       res.status(200).json(alimentoDB);
   } catch (error) {
@@ -183,6 +185,7 @@ router.put('/:id', async(req, res) => {
 router.delete('/:id', async(req, res) => {
   const _id = req.params.id;
   try {
+      console.log("Borrando el alimento "+_id+"...")
       const alimentoDB = await Alimento.findByIdAndDelete(_id);
       res.status(200).json(alimentoDB);
   } catch (error) {
