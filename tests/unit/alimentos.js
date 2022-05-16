@@ -254,7 +254,7 @@ describe('Get Alimentos Recientes: ', () => {
   
     it.only('should get with buscador, ordenar y alergeno successfully', (done) => {
       chai.request(url)
-      .get('/alimentos/recientes/626425109b595c35e7ac6229')
+      .get('/alimentos/favoritos/626425109b595c35e7ac6229')
       .query({pagina:0,buscador:'tomate',alergeno:'huevos',ordenar:['nombre','1']})
       .end(function(err, res) {
         expect(res).to.have.status(200);
@@ -263,6 +263,92 @@ describe('Get Alimentos Recientes: ', () => {
         done();
       });
     });
+}); 
+
+describe('Get Alimentos Favoritos: ', () => {
+  it.only('should get successfully', (done) => {
+    chai.request(url)
+    .get('/alimentos/favoritos/626425109b595c35e7ac6229')
+    .query({pagina:0,ordenar:['nombre','1']})
+    .end(function(err, res) {
+      expect(res).to.have.status(200);
+      expect(res.body).to.have.property('resultado');
+      expect(res.body).to.have.property('total');
+      done();
+    });
+  });
+
+  it.only('should get with ordenar successfully', (done) => {
+    chai.request(url)
+    .get('/alimentos/favoritos/626425109b595c35e7ac6229')
+    .query({pagina:0,ordenar:['nombre','1']})
+    .end(function(err, res) {
+      expect(res).to.have.status(200);
+      expect(res.body).to.have.property('resultado');
+      expect(res.body).to.have.property('total');
+      done();
+    });
+  });
+
+  it.only('should get with buscador successfully', (done) => {
+    chai.request(url)
+    .get('/alimentos/favoritos/626425109b595c35e7ac6229')
+    .query({pagina:0,buscador:'tomate'})
+    .end(function(err, res) {
+      expect(res).to.have.status(200);
+      expect(res.body).to.have.property('resultado');
+      expect(res.body).to.have.property('total');
+      done();
+    });
+  });
+
+  it.only('should get with alergeno successfully', (done) => {
+    chai.request(url)
+    .get('/alimentos/favoritos/626425109b595c35e7ac6229')
+    .query({pagina:0,alergeno:'huevos'})
+    .end(function(err, res) {
+      expect(res).to.have.status(200);
+      expect(res.body).to.have.property('resultado');
+      expect(res.body).to.have.property('total');
+      done();
+    });
+  });
+    
+  it.only('should get with buscador y ordenar successfully', (done) => {
+    chai.request(url)
+    .get('/alimentos/favoritos/626425109b595c35e7ac6229')
+    .query({pagina:0,buscador:'tomate',ordenar:['nombre','1']})
+    .end(function(err, res) {
+      expect(res).to.have.status(200);
+      expect(res.body).to.have.property('resultado');
+      expect(res.body).to.have.property('total');
+      done();
+    });
+  });
+
+  it.only('should get with buscador y alergeno successfully', (done) => {
+    chai.request(url)
+    .get('/alimentos/favoritos/626425109b595c35e7ac6229')
+    .query({pagina:0,buscador:'tomate',alergeno:'huevos'})
+    .end(function(err, res) {
+      expect(res).to.have.status(200);
+      expect(res.body).to.have.property('resultado');
+      expect(res.body).to.have.property('total');
+      done();
+    });
+  });
+
+  it.only('should get with buscador, ordenar y alergeno successfully', (done) => {
+    chai.request(url)
+    .get('/alimentos/favoritos/626425109b595c35e7ac6229')
+    .query({pagina:0,buscador:'tomate',alergeno:'huevos',ordenar:['nombre','1']})
+    .end(function(err, res) {
+      expect(res).to.have.status(200);
+      expect(res.body).to.have.property('resultado');
+      expect(res.body).to.have.property('total');
+      done();
+    });
+  });
 }); 
 
 describe('Añadir alimentos: ', () => {
