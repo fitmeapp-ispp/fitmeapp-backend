@@ -4,7 +4,8 @@ const mongoose = require("mongoose");
 const alimento = require('../models/alimento');
 
 var Alimento = require('../models/alimento');
-var Consumicion = require('../models/consumicion')
+var Consumicion = require('../models/consumicion');
+var dia = require('../models/dia');
 
 const dctAlergenos =  {
   'gluten': /(gluten)/,
@@ -203,9 +204,10 @@ router.get('/:id', async (req, res) => {
 router.post('/', async(req, res) => {
   const body = req.body;  
   try {
-    console.log("Añadiendo un nuevo alimento...")
+      console.log("Añadiendo un nuevo alimento...")
       body._id = new mongoose.Types.ObjectId();
       const alimentoDB = await Alimento.create(body);
+      console.log("Nuevo alimento añadido: ", alimentoDB._id);
       res.status(200).json(alimentoDB); 
   } catch (error) {
       return res.status(500).json({
@@ -236,6 +238,48 @@ router.delete('/:id', async(req, res) => {
   try {
       console.log("Borrando el alimento "+_id+"...")
       const alimentoDB = await Alimento.findByIdAndDelete(_id);
+      const consumicionesDB = await Consumicion.find({'alimento': _id});
+
+      for (let consumicionDB of consumicionesDB){
+        const diasDBDesayuno = await dia.find({'consumicionesDesayuno': consumicionDB._id})
+        for (let diasDB of diasDBDesayuno){
+          diasDB.consumicionesDesayuno.remove(consumicionDB._id);
+
+          diasDB.kcalIngeridasDesayuno =  Math.trunc(Math.abs(diasDB.kcalIngeridasDesayuno - (alimentoDB.kcal_100g*consumicionDB.cantidad)/100))
+          diasDB.proteinasIngeridasDesayuno = Math.trunc(Math.abs(diasDB.proteinasIngeridasDesayuno - (alimentoDB.proteinas_100g*consumicionDB.cantidad)/100))
+          diasDB.carbIngeridasDesayuno = Math.trunc(Math.abs(diasDB.carbIngeridasDesayuno - (alimentoDB.carbohidratos_100g*consumicionDB.cantidad)/100))
+          diasDB.grasasIngeridasDesayuno = Math.trunc(Math.abs(diasDB.grasasIngeridasDesayuno - (alimentoDB.grasa_100g*consumicionDB.cantidad)/100))
+
+          await diasDB.save();
+        }
+        
+        const diasDBAlmuerzo = await dia.find({'consumicionesAlmuerzo': consumicionDB._id})
+        for (let diasDB of diasDBAlmuerzo){
+          diasDB.consumicionesAlmuerzo.remove(consumicionDB._id);
+
+          diasDB.kcalIngeridasAlmuerzo =  Math.trunc(Math.abs(diasDB.kcalIngeridasAlmuerzo - (alimentoDB.kcal_100g*consumicionDB.cantidad)/100))
+          diasDB.proteinasIngeridasAlmuerzo = Math.trunc(Math.abs(diasDB.proteinasIngeridasAlmuerzo - (alimentoDB.proteinas_100g*consumicionDB.cantidad)/100))
+          diasDB.carbIngeridasAlmuerzo = Math.trunc(Math.abs(diasDB.carbIngeridasAlmuerzo - (alimentoDB.carbohidratos_100g*consumicionDB.cantidad)/100))
+          diasDB.grasasIngeridasAlmuerzo = Math.trunc(Math.abs(diasDB.grasasIngeridasAlmuerzo - (alimentoDB.grasa_100g*consumicionDB.cantidad)/100))
+
+          await diasDB.save();
+        }
+        
+        const diasDBCena = await dia.find({'consumicionesCena': consumicionDB._id})
+        for (let diasDB of diasDBCena){
+          diasDB.consumicionesCena.remove(consumicionDB._id);
+          
+          diasDB.kcalIngeridasCena =  Math.trunc(Math.abs( diasDB.kcalIngeridasCena - (alimentoDB.kcal_100g * consumicionDB.cantidad)/100 ).toFixed(2))
+          diasDB.proteinasIngeridasCena = Math.trunc(Math.abs( diasDB.proteinasIngeridasCena - (alimentoDB.proteinas_100g * consumicionDB.cantidad)/100 ).toFixed(2))
+          diasDB.carbIngeridasCena = Math.trunc(Math.abs( diasDB.carbIngeridasCena - (alimentoDB.carbohidratos_100g * consumicionDB.cantidad)/100 ).toFixed(2))
+          diasDB.grasasIngeridasCena = Math.trunc(Math.abs( diasDB.grasasIngeridasCena - (alimentoDB.grasa_100g * consumicionDB.cantidad)/100 ).toFixed(2))
+
+          await diasDB.save();
+        }
+      }
+      
+      await Consumicion.deleteMany({_id: {$in: consumicionesDB }});
+      console.log("Alimento borrado junto con sus relaciones")
       res.status(200).json(alimentoDB);
   } catch (error) {
       return res.status(500).json({
