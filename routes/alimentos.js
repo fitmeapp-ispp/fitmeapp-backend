@@ -111,7 +111,6 @@ router.get('/recientes/:userId', async (req, res) => {
   const ordenar = req.query.ordenar;
   const buscador = !(req.query.buscador) ? '': req.query.buscador;
   const alergeno = dctAlergenos[req.query.alergeno];
-  console.log(alergeno, ' de: ', req.query.alergeno)
   
   try {
     var consumiciones = await Consumicion.aggregate().match({"usuario": mongoose.Types.ObjectId(userId)}).sort({"fecha":-1}).group({"_id": "$alimento"});
@@ -154,7 +153,6 @@ router.get('/favoritos/:userId', async (req, res) => {
   const buscador = !(req.query.buscador) ? '': req.query.buscador;
   const alergeno = dctAlergenos[req.query.alergeno];
   const alimentoIds = req.query.alimentoIds;
-
 
   var alimentosDB = await Alimento.find({"_id":alimentoIds, "nombre": {$regex : buscador, $options:"i"}}).skip(pagina*9).limit(9);
   var total =  await Alimento.countDocuments({"_id":alimentoIds, "nombre": {$regex : buscador, $options:"i"}});
