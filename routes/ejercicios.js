@@ -2,6 +2,7 @@ const axios = require('axios');
 const express = require('express');
 const router = express.Router();
 const mongoose = require("mongoose");
+const consumicion = require('../models/consumicion');
 // Require Item model in our routes module
 var Ejercicio = require('../models/ejercicio');
 
@@ -49,13 +50,23 @@ router.put('/:id', async(req, res) => {
 router.delete('/:id', async(req, res) => {
   const _id = req.params.id;
   try {
-      const db = await Ejercicio.findByIdAndDelete(_id);
-      res.status(200).json(db);
+        console.log("Borrando el ejercicio "+_id+"...")
+        const db = await Ejercicio.findByIdAndDelete(_id);
+        const ejecucionesDB = await consumicion.find({ejercicio: _id})
+        for (let ejecucionDB of ejecucionesDB){
+            const diasDB = await dia.find({'ejercicios': ejecucionDB._id})
+            for (let diaDB of diasDB){
+                diaDB.ejercicios.remove(ejecucionDB._id)
+            }
+        }
+        await consumicion.deleteMany({_id: {$in: ejecucionesDB}})
+        console.log("Ejercicio borrado junto con sus relaciones")
+        res.status(200).json(db);
   } catch (error) {
-      return res.status(500).json({
-          mensaje: 'Ha ocurrido un error',
-          error
-      })
+        return res.status(500).json({
+            mensaje: 'Ha ocurrido un error',
+            error
+         })
   }
 });
 

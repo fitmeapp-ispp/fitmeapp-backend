@@ -269,10 +269,10 @@ router.delete('/:id', async(req, res) => {
         for (let diasDB of diasDBCena){
           diasDB.consumicionesCena.remove(consumicionDB._id);
           
-          diasDB.kcalIngeridasCena =  Math.trunc(Math.abs( diasDB.kcalIngeridasCena - (alimentoDB.kcal_100g * consumicionDB.cantidad)/100 ).toFixed(2))
-          diasDB.proteinasIngeridasCena = Math.trunc(Math.abs( diasDB.proteinasIngeridasCena - (alimentoDB.proteinas_100g * consumicionDB.cantidad)/100 ).toFixed(2))
-          diasDB.carbIngeridasCena = Math.trunc(Math.abs( diasDB.carbIngeridasCena - (alimentoDB.carbohidratos_100g * consumicionDB.cantidad)/100 ).toFixed(2))
-          diasDB.grasasIngeridasCena = Math.trunc(Math.abs( diasDB.grasasIngeridasCena - (alimentoDB.grasa_100g * consumicionDB.cantidad)/100 ).toFixed(2))
+          diasDB.kcalIngeridasCena =  Math.trunc(Math.abs( diasDB.kcalIngeridasCena - (alimentoDB.kcal_100g * consumicionDB.cantidad)/100 ))
+          diasDB.proteinasIngeridasCena = Math.trunc(Math.abs( diasDB.proteinasIngeridasCena - (alimentoDB.proteinas_100g * consumicionDB.cantidad)/100 ))
+          diasDB.carbIngeridasCena = Math.trunc(Math.abs( diasDB.carbIngeridasCena - (alimentoDB.carbohidratos_100g * consumicionDB.cantidad)/100 ))
+          diasDB.grasasIngeridasCena = Math.trunc(Math.abs( diasDB.grasasIngeridasCena - (alimentoDB.grasa_100g * consumicionDB.cantidad)/100 ))
 
           await diasDB.save();
         }
