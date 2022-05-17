@@ -357,7 +357,7 @@ router.get('/:tipo/:fecha/:userId', async(req, res) => {
     const userId = req.params.userId;
     const diaId = req.params.diaId;
     const tipo = req.params.tipo;
-    //const dia = await Dia.findOne({"_id": diaId});
+
     const consumiciones = await Consumicion.find({"calculadora": true, usuario: userId, tipo: tipo},{"_id": 1});
     const dia = await Dia.findOne({"_id": diaId});
     var conDesayuno = dia.consumicionesDesayuno;
@@ -391,7 +391,7 @@ router.get('/:tipo/:fecha/:userId', async(req, res) => {
           consumicionesCena: conCena,
         }
       }
-      console.log("cambio:",cambio)
+      
      Dia.findOneAndUpdate({ "_id": diaId },{
                       
       $set: cambio
@@ -403,7 +403,14 @@ router.get('/:tipo/:fecha/:userId', async(req, res) => {
               msg: 'No se pudo modificar la comida',
           });
       
-      }})
+      }else{
+        res.json({
+          resultado: true,
+          msg: 'Se modificó con éxito',
+      });
+      }
+    
+    })
 
   }
 
