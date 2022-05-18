@@ -103,7 +103,6 @@ router.get('/recomendacion/:userId', async (req, res) => {
                         .match({'$and': [{"recomendado":true}, {"fecha": {$gte: fechaInicio,$lte: fechaFin}},
                                             {'usuario': mongoose.Types.ObjectId(userId)}]})
                         .lookup({from:'exercises',as:'ejercicioDetalles',localField:'ejercicio',foreignField:'_id'});
-        console.log(items)
         //SI NO TIENE EJERCICIOS RECOMENDADOS, LOS CREA, GUARDA Y LOS AÑADE A items
         if (items.length < 1) {
             for (let i=8; i < 15; i++){
@@ -163,6 +162,7 @@ router.post('/', async (req, res) => {
         fechaInicio.setHours(0,0,0,0)
         let fechaFin = new Date(req.body.fecha);
         fechaFin.setHours(23,59,59,999)
+        console.log("Añadiendo una nueva ejecución...")
         // COMPROBAMOS SI SE HA RECOMENDADO DICHO EJERCICIO HOY Y NO ESTÁ REALIZADO
         let ejercicio_ejecucion = await Ejecucion.find({$and: [{"hecho":false}, {"fecha": {$gte: fechaInicio,$lte: fechaFin}},
                                                     {'usuario': mongoose.Types.ObjectId(ejercicioRealizado.usuario)}, 
@@ -187,6 +187,7 @@ router.post('/', async (req, res) => {
             ejercicio_ejecucion.kcal = kcal;
             ejercicio_ejecucion.hecho = true;
             const ejecucionDB = await Ejecucion.findByIdAndUpdate(ejercicio_ejecucion._id, ejercicio_ejecucion);
+            console.log("Ejecución añadida, " + ejecucionDB._id)
             res.status(200).json(ejecucionDB);
         //SI NO EXISTE DICHA RECOMENDACIÓN, LA CREAMOS
         }else{
@@ -201,6 +202,7 @@ router.post('/', async (req, res) => {
             ejecucion.hecho = true;
             ejecucion.usuario = ejercicioRealizado.usuario;
             const ejecucionDB = await Ejecucion.create(ejecucion);
+            console.log("Ejecución añadida, " + ejecucionDB._id)
             res.status(200).json(ejecucionDB);
         }
     } catch (error) {
@@ -216,7 +218,7 @@ router.put('/:id', async(req, res) => {
     const body = req.body; 
     try {
         const usuario = await Usuario.findOne({_id: body.usuario});
-
+        console.log("Actualizando una ejecución...")
         const vo2 = dctActividadFisica[body.intensidad];
         const met = round(vo2/3.5)
         const kcal_min = round(met*0.0175*usuario.peso_actual)
@@ -224,6 +226,7 @@ router.put('/:id', async(req, res) => {
 
         let ejecucionDB = await Ejecucion.findByIdAndUpdate(_id, body);
         
+        console.log("Ejecución actualizada, " + ejecucionDB._id)
         res.status(200).json(ejecucionDB);
     } catch (error) {
         return res.status(500).json({
@@ -236,9 +239,11 @@ router.put('/:id', async(req, res) => {
 router.delete('/:id', async(req, res) => {
     const _id = req.params.id;
     try {
+        console.log("Borrando una ejecución...")
         let ejecucionDB = await Ejecucion.findById(_id);
         ejecucionDB.hecho = false
         ejecucionDB.save()
+        console.log("Ejecución borrada, " + ejecucionDB._id)
         res.status(200).json(ejecucionDB);
     } catch (error) {
         return res.status(500).json({
