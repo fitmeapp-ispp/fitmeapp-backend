@@ -33,7 +33,7 @@ router.get('/', async(req, res) => {
 router.post('/', async(req, res) => {
     const body = req.body;  
     try {
-    console.log("Posting a new user")
+    console.log("Añadiendo una nueva consumicion...")
     const consumicionDB = await Consumicion.create(body);
     res.status(200).json(consumicionDB); 
     } catch (error) {
@@ -41,6 +41,22 @@ router.post('/', async(req, res) => {
         mensaje: 'An error has occurred',
         error
     })
+    }
+});
+
+
+//SE USA PARA BORRAR LOS TESTS CREADOS
+router.delete('/:id', async(req, res) => {
+    const _id = req.params.id;
+    try {
+        console.log("Borrando la consumición "+_id+"...")
+        const consumicionDB = await Consumicion.findByIdAndDelete(_id);
+        res.status(200).json(consumicionDB);
+    } catch (error) {
+        return res.status(500).json({
+            mensaje: 'Ha ocurrido un error',
+            error
+        })
     }
 });
 

@@ -55,8 +55,13 @@ router.get('/:ejecucionId', async (req, res) => {
 // OBTENER EJERCICIOS DE HOY HECHOS POR UN USUARIO
 router.get('/done/:userId', async (req, res) => {
     const userId = mongoose.Types.ObjectId(req.params.userId);
+    const fecha = req.query.fecha;
+    let fechaInicio = new Date(fecha);
+    fechaInicio.setHours(0,0,0,0)
+    let fechaFin = new Date(fecha);
+    fechaFin.setHours(23,59,59,999)
     try {
-        const items = await Ejecucion.find({$and: [{"hecho":true}, {"fecha": {$gte: today.toDate(),$lte: moment(today).endOf('day').toDate()}},
+        const items = await Ejecucion.find({$and: [{"hecho":true}, {"fecha": {$gte:fechaInicio, $lte: fechaFin}},
                                                     {'usuario': mongoose.Types.ObjectId(userId)}]});
         res.json(items);
     } catch (error) {
@@ -88,12 +93,16 @@ router.get('/done/:userId/:fecha', async (req, res) => {
 router.get('/recomendacion/:userId', async (req, res) => {
     try {
         const userId = req.params.userId;
+        let fechaInicio = new Date(req.query.fecha);
+        console.log(req.query.fecha)
+        fechaInicio.setHours(0,0,0,0)
+        let fechaFin = new Date(req.query.fecha);
+        fechaFin.setHours(23,59,59,999)
         //OBTIENE LAS RECOMENDACIONES DE HOY Y LE AÑADE LOS DETALLES DEL EJERCICIO RELACIONADO
         let items = await Ejecucion.aggregate()
-                        .match({'$and': [{"recomendado":true}, {"fecha": {$gte: today.toDate(),$lte: moment(today).endOf('day').toDate()}},
+                        .match({'$and': [{"recomendado":true}, {"fecha": {$gte: fechaInicio,$lte: fechaFin}},
                                             {'usuario': mongoose.Types.ObjectId(userId)}]})
                         .lookup({from:'exercises',as:'ejercicioDetalles',localField:'ejercicio',foreignField:'_id'});
-        
         //SI NO TIENE EJERCICIOS RECOMENDADOS, LOS CREA, GUARDA Y LOS AÑADE A items
         if (items.length < 1) {
             for (let i=8; i < 15; i++){
@@ -108,6 +117,7 @@ router.get('/recomendacion/:userId', async (req, res) => {
                 ejecucion.kcal = 0;
                 ejecucion.recomendado = true;
                 ejecucion.hecho = false;
+                ejecucion.fecha = fechaFin;
                 ejecucion.usuario = userId;
                 ejecucion.save();
                 resEjecucion = ejecucion.toObject()
@@ -147,9 +157,14 @@ router.get('/:userId/:fecha/:exerciseId', async (req, res) => {
 
 router.post('/', async (req, res) => {
     try{
-        const ejercicioRealizado = req.body;
+        const ejercicioRealizado = req.body.exercise;
+        let fechaInicio = new Date(req.body.fecha);
+        fechaInicio.setHours(0,0,0,0)
+        let fechaFin = new Date(req.body.fecha);
+        fechaFin.setHours(23,59,59,999)
+        console.log("Añadiendo una nueva ejecución...")
         // COMPROBAMOS SI SE HA RECOMENDADO DICHO EJERCICIO HOY Y NO ESTÁ REALIZADO
-        let ejercicio_ejecucion = await Ejecucion.find({$and: [{"hecho":false}, {"fecha": {$gte: today.toDate(),$lte: moment(today).endOf('day').toDate()}},
+        let ejercicio_ejecucion = await Ejecucion.find({$and: [{"hecho":false}, {"fecha": {$gte: fechaInicio,$lte: fechaFin}},
                                                     {'usuario': mongoose.Types.ObjectId(ejercicioRealizado.usuario)}, 
                                                     {"ejercicio":mongoose.Types.ObjectId(ejercicioRealizado.ejercicio)}]});
         
@@ -172,13 +187,14 @@ router.post('/', async (req, res) => {
             ejercicio_ejecucion.kcal = kcal;
             ejercicio_ejecucion.hecho = true;
             const ejecucionDB = await Ejecucion.findByIdAndUpdate(ejercicio_ejecucion._id, ejercicio_ejecucion);
+            console.log("Ejecución añadida, " + ejecucionDB._id)
             res.status(200).json(ejecucionDB);
         //SI NO EXISTE DICHA RECOMENDACIÓN, LA CREAMOS
         }else{
             var ejecucion = new Ejecucion();
             ejecucion._id = new mongoose.Types.ObjectId();
             ejecucion.intensidad = ejercicioRealizado.intensidad;
-            ejecucion.fecha = new Date();
+            ejecucion.fecha = fechaInicio;
             ejecucion.ejercicio  = ejercicioRealizado.ejercicio
             ejecucion.minutos = ejercicioRealizado.minutos;
             ejecucion.recomendado = false;
@@ -186,6 +202,7 @@ router.post('/', async (req, res) => {
             ejecucion.hecho = true;
             ejecucion.usuario = ejercicioRealizado.usuario;
             const ejecucionDB = await Ejecucion.create(ejecucion);
+            console.log("Ejecución añadida, " + ejecucionDB._id)
             res.status(200).json(ejecucionDB);
         }
     } catch (error) {
@@ -201,7 +218,7 @@ router.put('/:id', async(req, res) => {
     const body = req.body; 
     try {
         const usuario = await Usuario.findOne({_id: body.usuario});
-
+        console.log("Actualizando una ejecución...")
         const vo2 = dctActividadFisica[body.intensidad];
         const met = round(vo2/3.5)
         const kcal_min = round(met*0.0175*usuario.peso_actual)
@@ -209,6 +226,7 @@ router.put('/:id', async(req, res) => {
 
         let ejecucionDB = await Ejecucion.findByIdAndUpdate(_id, body);
         
+        console.log("Ejecución actualizada, " + ejecucionDB._id)
         res.status(200).json(ejecucionDB);
     } catch (error) {
         return res.status(500).json({
@@ -221,9 +239,11 @@ router.put('/:id', async(req, res) => {
 router.delete('/:id', async(req, res) => {
     const _id = req.params.id;
     try {
+        console.log("Borrando una ejecución...")
         let ejecucionDB = await Ejecucion.findById(_id);
         ejecucionDB.hecho = false
         ejecucionDB.save()
+        console.log("Ejecución borrada, " + ejecucionDB._id)
         res.status(200).json(ejecucionDB);
     } catch (error) {
         return res.status(500).json({
