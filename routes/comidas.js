@@ -121,9 +121,10 @@ router.get('/:tipo/:fecha/:userId', async(req, res) => {
         res.json(diaFinal);
 
     } catch (error) {
+      console.log('Ha ocurrido el error: ', error)
         return res.status(400).json({
         mensaje: 'An error has occurred',
-        error
+        error: error
         })
     }
 });
