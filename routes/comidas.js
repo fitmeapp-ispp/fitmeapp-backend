@@ -8,14 +8,14 @@ const Mongoose = require('mongoose')
 function aggreationFuntion(tipo, fecha, userId){
     fechaAUsar = new Date(Date.parse(fecha).valueOf());
     
-    fechaAUsar.setHours(2);
+    fechaAUsar.setHours(0);
     fechaAUsar.setMinutes(0);
     fechaAUsar.setSeconds(0);
     fechaAUsar.setMilliseconds(0);
 
     fechaInicio =new Date(fechaAUsar.valueOf());
 
-    fechaAUsar.setHours(25);
+    fechaAUsar.setHours(23);
     fechaAUsar.setMinutes(59);
     fechaAUsar.setSeconds(59);
     fechaAUsar.setMilliseconds(999);
